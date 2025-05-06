@@ -13,6 +13,7 @@ Parameters:
   AllowedDomain:
     Type: String
     Default: "http://d19kpussj440vd.cloudfront.net"
+
 Resources:
   GenerateEmbedUrlFunction:
     Type: AWS::Serverless::Function
@@ -37,4 +38,4 @@ Resources:
       StageName: !Ref EnvType
       Cors:
         AllowMethods: "'GET'"
-        AllowOrigin: !QuickSightUserArn  # Mismo que ALLOWED_DOMAIN
+        AllowOrigin: !Sub "'${AllowedDomain}'"
