@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EnvType:
+    Type: String
+    Default: dev
+    AllowedValues: [prod, dev]
+  AWSAccountId:
+    Type: String
+    Default: "240435918890"
+  QuickSightUserArn:
+    Type: String
+    Default: "arn:aws:quicksight:us-east-1:240435918890:user/default/diego-dev"
+  AllowedDomain:
+    Type: String
+    Default: "http://d19kpussj440vd.cloudfront.net"
+Resources:
+  GenerateEmbedUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generateEmbedUrl/
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          AWS_ACCOUNT_ID: !Ref AWSAccountId
+          QUICKSIGHT_USER_ARN: !Ref QuickSightUserArn
+          ALLOWED_DOMAIN: !Ref AllowedDomain
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: quicksight:GenerateEmbedUrlForRegisteredUser
+              Resource: "*"
+
+  EmbedUrlApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref EnvType
+      Cors:
+        AllowMethods: "'GET'"
+        AllowOrigin: !QuickSightUserArn  # Mismo que ALLOWED_DOMAIN
