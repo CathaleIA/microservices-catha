@@ -2,43 +2,61 @@ import { QuickSightClient, GenerateEmbedUrlForRegisteredUserCommand } from "@aws
 
 const quicksightClient = new QuickSightClient({ region: "us-east-1" });
 
-// Valores hardcodeados (¡No recomendado para entornos reales!)
-const AWS_ACCOUNT_ID = "240435918890";
-const QUICKSIGHT_USER_ARN = "arn:aws:quicksight:us-east-1:240435918890:user/default/diego-dev";
-const ALLOWED_DOMAIN = "http://d19kpussj440vd.cloudfront.net";
-const DASHBOARD_ID = "57aab648-7a18-4f91-9c8a-0d89ffb98823";
+// Valores hardcodeados
+const CONFIG = {
+  AWS_ACCOUNT_ID: "240435918890",
+  QUICKSIGHT_USER_ARN: "arn:aws:quicksight:us-east-1:240435918890:user/default/diego-dev",
+  ALLOWED_DOMAIN: "https://d19kpussj440vd.cloudfront.net",
+  DASHBOARD_ID: "57aab648-7a18-4f91-9c8a-0d89ffb98823"
+};
 
-export const handler = async (event) => {
+export const handler = async () => { // No necesitas el parámetro 'event'
   try {
+    console.log("Iniciando generación de URL...");
+    
     const params = {
-      AwsAccountId: AWS_ACCOUNT_ID,
-      UserArn: QUICKSIGHT_USER_ARN,
+      AwsAccountId: CONFIG.AWS_ACCOUNT_ID,
+      UserArn: CONFIG.QUICKSIGHT_USER_ARN,
       SessionLifetimeInMinutes: 600,
       ExperienceConfiguration: {
         Dashboard: {
-          InitialDashboardId: DASHBOARD_ID,
-        },
+          InitialDashboardId: CONFIG.DASHBOARD_ID
+        }
       },
-      AllowedDomains: [ALLOWED_DOMAIN],
+      AllowedDomains: [CONFIG.ALLOWED_DOMAIN]
     };
 
+    console.log("Parámetros:", JSON.stringify(params, null, 2));
+    
     const command = new GenerateEmbedUrlForRegisteredUserCommand(params);
     const response = await quicksightClient.send(command);
+    
+    console.log("Respuesta de QuickSight:", response);
 
     return {
       statusCode: 200,
       headers: {
-        "Access-Control-Allow-Origin": ALLOWED_DOMAIN,
         "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": CONFIG.ALLOWED_DOMAIN,
+        "Access-Control-Allow-Methods": "GET"
       },
-      body: JSON.stringify({ embedUrl: response.EmbedUrl }),
+      body: JSON.stringify({ 
+        embedUrl: response.EmbedUrl 
+      })
     };
+
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error crítico:", error);
     return {
       statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": ALLOWED_DOMAIN },
-      body: JSON.stringify({ error: "Error generando URL" }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": CONFIG.ALLOWED_DOMAIN
+      },
+      body: JSON.stringify({
+        error: "Error interno del servidor",
+        code: "QS_EMBED_FAIL"
+      })
     };
   }
 };

@@ -14,8 +14,8 @@ Parameters:
     Default: "arn:aws:quicksight:us-east-1:240435918890:user/default/diego-dev"
   AllowedDomain:
     Type: String
-    Default: "http://d19kpussj440vd.cloudfront.net"
- 
+    Default: "https://d19kpussj440vd.cloudfront.net"  # Cambia a HTTPS
+
 Resources:
   GenerateEmbedUrlFunction:
     Type: AWS::Serverless::Function
@@ -29,9 +29,12 @@ Resources:
           QUICKSIGHT_USER_ARN: !Ref QuickSightUserArn
           ALLOWED_DOMAIN: !Ref AllowedDomain
       Policies:
-        - Statement:
+        - Version: "2012-10-17"
+          Statement:
             - Effect: Allow
-              Action: quicksight:GenerateEmbedUrlForRegisteredUser
+              Action: 
+                - quicksight:GenerateEmbedUrlForRegisteredUser
+                - quicksight:DescribeDashboard
               Resource: "*"
       Events:
         GetEmbedUrl:
@@ -40,7 +43,7 @@ Resources:
             RestApiId: !Ref EmbedUrlApi
             Path: /getEmbedUrl
             Method: GET
- 
+
   EmbedUrlApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -48,3 +51,4 @@ Resources:
       Cors:
         AllowMethods: "'GET'"
         AllowOrigin: !Sub "'${AllowedDomain}'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
