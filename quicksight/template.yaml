@@ -15,7 +15,7 @@ Parameters:
   AllowedDomain:
     Type: String
     Default: "http://d19kpussj440vd.cloudfront.net"
-
+ 
 Resources:
   GenerateEmbedUrlFunction:
     Type: AWS::Serverless::Function
@@ -33,7 +33,14 @@ Resources:
             - Effect: Allow
               Action: quicksight:GenerateEmbedUrlForRegisteredUser
               Resource: "*"
-
+      Events:
+        GetEmbedUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EmbedUrlApi
+            Path: /getEmbedUrl
+            Method: GET
+ 
   EmbedUrlApi:
     Type: AWS::Serverless::Api
     Properties:
