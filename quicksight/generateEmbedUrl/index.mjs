@@ -5,8 +5,8 @@ const quicksightClient = new QuickSightClient({ region: "us-east-1" });
 export const handler = async (event) => {
   try {
     const params = {
-      AwsAccountId: process.env.AWS_ACCOUNT_ID,
-      UserArn: process.env.QUICKSIGHT_USER_ARN,
+      AwsAccountId: "240435918890",
+      UserArn: "arn:aws:quicksight:us-east-1:240435918890:user/default/diego-dev",
       SessionLifetimeInMinutes: 600,
       ExperienceConfiguration: {
         Dashboard: {
