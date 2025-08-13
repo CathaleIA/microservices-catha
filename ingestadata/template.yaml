@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Arquitectura Ingesta + AppSync + Timestream + DynamoDB + EventBridge
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 128
+
+Resources:
+  ## --- DynamoDB ---
+  AssetStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AssetStatus
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: assetId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: assetId
+          KeyType: HASH
+
+  ## --- Timestream ---
+  AssetTimestreamDB:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: AssetMetricsDB
+
+  AssetTimestreamTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref AssetTimestreamDB
+      TableName: AssetMetricsTable
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: 24
+        MagneticStoreRetentionPeriodInDays: 365
+
+  ## --- AppSync ---
+  AssetApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: AssetDashboardAPI
+      AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      UserPoolConfig:
+        AwsRegion: !Ref AWS::Region
+        UserPoolId: "us-east-1_hWdkRwqlP"  # <-- Reemplaza con el tuyo
+        DefaultAction: ALLOW
+
+  AssetSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      Definition: |
+        type AssetUpdate {
+          assetId: String!
+          status: String!
+          timestamp: String!
+        }
+
+        type Mutation {
+          publishUpdate(assetId: String!, status: String!, timestamp: String!): AssetUpdate
+        }
+
+        type Subscription {
+          onUpdate: AssetUpdate
+            @aws_subscribe(mutations: ["publishUpdate"])
+        }
+
+        type Query {
+          getStatus(assetId: String!): AssetUpdate
+        }
+
+  AssetApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AssetApiDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !GetAtt AssetStatusTable.Arn
+
+  ## --- Lambda Ingesta ---
+  LambdaIngesta:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: IngestaService/
+      Handler: lambda_ingesta.lambda_handler
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonTimestreamFullAccess
+        - AWSAppSyncInvokeFullAccess
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref AssetStatusTable
+          TIMESTREAM_DB: !Ref AssetTimestreamDB
+          TIMESTREAM_TABLE: !Ref AssetTimestreamTable
+          APPSYNC_API_URL: !Sub "https://${AssetApi.GraphQLUrl}"
+          APPSYNC_API_KEY: "NO_KEY" # Si usas Cognito, no necesitas API Key
+
+  ## --- EventBridge Scheduler ---
+  LambdaIngestaSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(5 minutes) # <-- Cambia intervalo
+      Targets:
+        - Arn: !GetAtt LambdaIngesta.Arn
+          Id: LambdaIngestaTarget
+
+  LambdaIngestaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaIngesta
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LambdaIngestaSchedule.Arn
