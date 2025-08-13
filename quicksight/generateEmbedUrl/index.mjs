@@ -1,7 +1,7 @@
 import { QuickSightClient, GenerateEmbedUrlForRegisteredUserCommand } from "@aws-sdk/client-quicksight";
 
 const quicksightClient = new QuickSightClient({ region: "us-east-1" });
-
+"@aws-sdk/client-quicksight"
 // Valores hardcodeados
 const CONFIG = {
   AWS_ACCOUNT_ID: "240435918890",
