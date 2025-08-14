@@ -44,7 +44,7 @@ def lambda_handler(event, context):
                     'MeasureName': 'potencia',
                     'MeasureValue': str(asset['potencia']),
                     'MeasureValueType': 'DOUBLE',
-                    'Time': str(int(datetime.utcnow().timestamp() * 1000))
+                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
                 },
                 {
                     'Dimensions': [
@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                     'MeasureName': 'temperatura',
                     'MeasureValue': str(asset['temp']),
                     'MeasureValueType': 'DOUBLE',
-                    'Time': str(int(datetime.utcnow().timestamp() * 1000))
+                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
                 }
             ]
         )

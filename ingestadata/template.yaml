@@ -62,6 +62,12 @@ Resources:
           timestamp: String!
         }
 
+        type Metric {
+          timestamp: String!
+          metric: String!
+          value: Float!
+        }
+
         type Mutation {
           publishUpdate(assetId: String!, status: String!, timestamp: String!): AssetUpdate
         }
@@ -73,6 +79,7 @@ Resources:
 
         type Query {
           getStatus(assetId: String!): AssetUpdate
+          getMetrics(assetId: String!, start: String!, end: String!) : [Metric]
         }
 
   AssetApiRole:
@@ -131,6 +138,84 @@ Resources:
           TIMESTREAM_TABLE: AssetMetricsTable
           APPSYNC_API_URL: !GetAtt AssetApi.GraphQLUrl
           APPSYNC_API_KEY: "NO_KEY"
+
+  ## --- Lambda Lectura --
+  LambdaQueryHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: QueryService/
+      Handler: lambda_query.lambda_handler
+      Policies:
+        - Version : "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+            Resource: !GetAtt AssetStatusTable.Arn
+          - Effect: Allow
+            Action:
+              - timestream: Query
+              - timestream: DescribeEndpoints
+            Resource: "*"
+      Enviroment:
+        Variables:
+          DYNAMODB_TABLE: !Ref AssetStatusTable
+          TIMESTREAM_DB: !Ref AssetTimestreamDB
+          TIMESTREAM_TABLE: AssetMetricsTable
+
+  ## -- Data Source --
+  LambdaQueryDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      Name: LambdaQueryDataSource
+      Type: AWS_LAMBDA
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt LambdaQueryHandler.Arn
+      ServiceRoleArn: !GetAtt AssetApiRole.Arn
+
+  ## -- Resolver para Dynamo -- 
+  AssetQueryResolver:
+    Type: AWS:AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      TypeName: Query
+      FieldName: getStatus
+      DataSourceName: LambdaQueryDataSource
+      RequestMappingTemplate: |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "info": {
+              "fieldName": "getStatus"
+            },
+            "arguments": $util.toJson($context.arguments)
+          }
+        }
+      ResponseMappingTemplate: "$util.toJson($context.result)"
+
+  ## -- Resolver para timestream --
+  AssetMetricsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      TypeName: Query
+      FieldName: getMetrics
+      DataSourceName: LambdaQueryDataSource
+      RequestMappingTemplate: |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "info": {
+              "fieldName": "getMetrics"
+            },
+            "arguments": $util.toJson($context.arguments)
+          }
+        }
+      ResponseMappingTemplate: "$util.toJson($context.result)"
+
 
   ## --- EventBridge Scheduler ---
   LambdaIngestaSchedule:

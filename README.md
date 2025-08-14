@@ -25,7 +25,7 @@
     ingestadata/
     ├── IngestaService/
     │   ├── lambda_ingesta.py
-    │   └── requirements.txt  # Contiene: boto3 y requests
+    │   └── requirements.txt
     ├── template.yaml
     ```
 1. Comando para desplegar:  
@@ -33,7 +33,6 @@
     sam build
     sam deploy
     ``` 
-
     ![recursos](img/resources-deployed.png)
 
 ## Conexion con AWS. Mediante Librerias graphql (NO AMPLIFY).
