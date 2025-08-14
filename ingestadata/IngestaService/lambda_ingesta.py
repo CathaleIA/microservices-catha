@@ -34,8 +34,8 @@ def lambda_handler(event, context):
 
         # 3. Guardar histórico en Timestream
         timestream.write_records(
-            DatabaseName='AssetMetricsDB',
-            TableName='AssetMetricsTable',
+            DatabaseName=os.environ['TIMESTREAM_DB'],
+            TableName=os.environ['TIMESTREAM_TABLE'],
             Records=[
                 {
                     'Dimensions': [

@@ -128,9 +128,9 @@ Resources:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
           TIMESTREAM_DB: !Ref AssetTimestreamDB
-          TIMESTREAM_TABLE: !Ref AssetTimestreamTable
-          APPSYNC_API_URL: !Sub "https://${AssetApi.GraphQLUrl}"
-          APPSYNC_API_KEY: "NO_KEY" # Si usas Cognito, no necesitas API Key
+          TIMESTREAM_TABLE: !GetAtt AssetTimestreamTable.TableName
+          APPSYNC_API_URL: !Sub "https://${AssetApi.ApiId}.appsync-api.${AWS::Region}.amazonaws.com/graphql"
+          APPSYNC_API_KEY: "NO_KEY"
 
   ## --- EventBridge Scheduler ---
   LambdaIngestaSchedule:
