@@ -176,7 +176,7 @@ Resources:
 
   ## -- Resolver para Dynamo -- 
   AssetQueryResolver:
-    Type: AWS:AppSync::Resolver
+    Type: AWS::AppSync::Resolver
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
