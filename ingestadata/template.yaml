@@ -108,10 +108,8 @@ Resources:
     Properties:
       CodeUri: IngestaService/
       Handler: lambda_ingesta.lambda_handler
-    Policies:
-      - PolicyName: CustomLambdaPolicy
-        PolicyDocument:
-          Version: "2012-10-17"
+      Policies:
+        - Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
