@@ -157,7 +157,7 @@ Resources:
                 - timestream: Query
                 - timestream: DescribeEndpoints
               Resource: "*"
-      Enviroment:
+      Environment:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
           TIMESTREAM_DB: !Ref AssetTimestreamDB
