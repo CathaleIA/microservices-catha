@@ -177,6 +177,7 @@ Resources:
   ## -- Resolver para Dynamo -- 
   AssetQueryResolver:
     Type: AWS::AppSync::Resolver
+    DependsOn: LambdaQueryDataSource
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
@@ -198,6 +199,7 @@ Resources:
   ## -- Resolver para timestream --
   AssetMetricsResolver:
     Type: AWS::AppSync::Resolver
+    DependsOn: LambdaQueryDataSource
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
