@@ -147,16 +147,16 @@ Resources:
       Handler: lambda_query.lambda_handler
       Policies:
         - Version : "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - dynamodb:GetItem
-            Resource: !GetAtt AssetStatusTable.Arn
-          - Effect: Allow
-            Action:
-              - timestream: Query
-              - timestream: DescribeEndpoints
-            Resource: "*"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource: !GetAtt AssetStatusTable.Arn
+            - Effect: Allow
+              Action:
+                - timestream: Query
+                - timestream: DescribeEndpoints
+              Resource: "*"
       Enviroment:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
