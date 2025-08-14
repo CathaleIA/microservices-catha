@@ -14,6 +14,8 @@
     ```
     git remote set-url origin git@github.com:CathaleIA/microservices-catha.git
     ```
+5. Tener permisos de GIT `sudo chown -R ec2-user:ec2-user .`
+
 
 ## Desplegar en AWS
 1. Clone repositorio en EC2

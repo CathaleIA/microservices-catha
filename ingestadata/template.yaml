@@ -109,20 +109,23 @@ Resources:
       CodeUri: IngestaService/
       Handler: lambda_ingesta.lambda_handler
     Policies:
-      - Statement:
-          - Effect: Allow
-            Action:
-              - dynamodb:PutItem
-            Resource: !GetAtt AssetStatusTable.Arn
-          - Effect: Allow
-            Action:
-              - timestream:WriteRecords
-              - timestream:DescribeEndpoints
-            Resource: "*"
-          - Effect: Allow
-            Action:
-              - appsync:GraphQL
-            Resource: "*"
+      - PolicyName: CustomLambdaPolicy
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: !GetAtt AssetStatusTable.Arn
+            - Effect: Allow
+              Action:
+                - timestream:WriteRecords
+                - timestream:DescribeEndpoints
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - appsync:GraphQL
+              Resource: "*"
       Environment:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
