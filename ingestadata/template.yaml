@@ -116,7 +116,7 @@ Resources:
       CodeUri: IngestaService/
       Handler: lambda_ingesta.lambda_handler
       Policies:
-        - Version: "2012-10-17"
+        - Version:  "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
@@ -146,7 +146,7 @@ Resources:
       CodeUri: QueryService/
       Handler: lambda_query.lambda_handler
       Policies:
-        - Version : "2012-10-17"
+        - Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
@@ -154,8 +154,8 @@ Resources:
               Resource: !GetAtt AssetStatusTable.Arn
             - Effect: Allow
               Action:
-                - timestream: Query
-                - timestream: DescribeEndpoints
+                - timestream:Query
+                - timestream:DescribeEndpoints
               Resource: "*"
       Environment:
         Variables:
