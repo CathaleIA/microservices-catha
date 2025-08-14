@@ -11,6 +11,10 @@ table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 APPSYNC_URL = os.environ['APPSYNC_API_URL']
 
 def lambda_handler(event, context):
+    print(f"Región de Lambda: {os.environ.get('AWS_REGION')}")
+    print(f"DB: {os.environ['TIMESTREAM_DB']}") 
+    print(f"Tabla: {os.environ['TIMESTREAM_TABLE']}")
+    print(f"Endpoint Timestream: {timestream.meta.endpoint_url}")
     # 1. Simulación: Obtener datos de una API externa
     # En producción aquí haces requests.get() a tu API o DB
     assets_data = [
@@ -30,8 +34,8 @@ def lambda_handler(event, context):
 
         # 3. Guardar histórico en Timestream
         timestream.write_records(
-            DatabaseName=os.environ['TIMESTREAM_DB'],
-            TableName=os.environ['TIMESTREAM_TABLE'],
+            DatabaseName='AssetMetricsDB',
+            TableName='AssetMetricsTable',
             Records=[
                 {
                     'Dimensions': [
