@@ -30,6 +30,8 @@ Resources:
 
   AssetTimestreamTable:
     Type: AWS::Timestream::Table
+    DependsOn:
+      - AssetTimestreamDB
     Properties:
       DatabaseName: !Ref AssetTimestreamDB
       TableName: AssetMetricsTable
@@ -50,6 +52,8 @@ Resources:
 
   AssetSchema:
     Type: AWS::AppSync::GraphQLSchema
+    DependsOn:
+      - AssetApi
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       Definition: |
@@ -74,6 +78,8 @@ Resources:
 
   AssetApiRole:
     Type: AWS::IAM::Role
+    DependsOn:
+      - AssetStatusTable
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -96,6 +102,10 @@ Resources:
   ## --- Lambda Ingesta ---
   LambdaIngesta:
     Type: AWS::Serverless::Function
+    DependsOn:
+      - AssetTimestreamTable
+      - AssetTimestreamDB
+      - AssetStatusTable
     Properties:
       CodeUri: IngestaService/
       Handler: lambda_ingesta.lambda_handler
@@ -114,6 +124,8 @@ Resources:
   ## --- EventBridge Scheduler ---
   LambdaIngestaSchedule:
     Type: AWS::Events::Rule
+    DependsOn: 
+      - LambdaIngesta
     Properties:
       ScheduleExpression: rate(5 minutes) # <-- Cambia intervalo
       Targets:
@@ -122,6 +134,8 @@ Resources:
 
   LambdaIngestaPermission:
     Type: AWS::Lambda::Permission
+    DependsOn: 
+      - LambdaIngestaSchedule
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref LambdaIngesta
