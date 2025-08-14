@@ -98,38 +98,38 @@ Resources:
                   - dynamodb:PutItem
                 Resource: !GetAtt AssetStatusTable.Arn
 
-LambdaIngesta:
-  Type: AWS::Serverless::Function
-  DependsOn:
-    - AssetTimestreamTable
-    - AssetTimestreamDB
-    - AssetStatusTable
-  Properties:
-    CodeUri: IngestaService/
-    Handler: lambda_ingesta.lambda_handler
+  ## --- Lambda Ingesta ---
+  LambdaIngesta:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AssetTimestreamTable
+      - AssetTimestreamDB
+      - AssetStatusTable
+    Properties:
+      CodeUri: IngestaService/
+      Handler: lambda_ingesta.lambda_handler
     Policies:
-      # Mantén las políticas amplias existentes
-      - AmazonDynamoDBFullAccess
-      - AmazonTimestreamFullAccess
-      - AWSAppSyncInvokeFullAccess
-      
-      # Agrega ESTA política adicional específica para Timestream
-      - Version: "2012-10-17"
-        Statement:
+      - Statement:
           - Effect: Allow
             Action:
-              - timestream:DescribeDatabase
-              - timestream:DescribeTable
-            Resource:
-              - !Sub "arn:aws:timestream:${AWS::Region}:${AWS::AccountId}:database/${AssetTimestreamDB}"
-              - !Sub "arn:aws:timestream:${AWS::Region}:${AWS::AccountId}:database/${AssetTimestreamDB}/table/${AssetTimestreamTable}"
-    Environment:
-      Variables:
-        DYNAMODB_TABLE: !Ref AssetStatusTable
-        TIMESTREAM_DB: !Ref AssetTimestreamDB
-        TIMESTREAM_TABLE: !Ref AssetTimestreamTable
-        APPSYNC_API_URL: !Sub "https://${AssetApi.GraphQLUrl}"
-        APPSYNC_API_KEY: "NO_KEY"
+              - dynamodb:PutItem
+            Resource: !GetAtt AssetStatusTable.Arn
+          - Effect: Allow
+            Action:
+              - timestream:WriteRecords
+              - timestream:DescribeEndpoints
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - appsync:GraphQL
+            Resource: "*"
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref AssetStatusTable
+          TIMESTREAM_DB: !Ref AssetTimestreamDB
+          TIMESTREAM_TABLE: !Ref AssetTimestreamTable
+          APPSYNC_API_URL: !Sub "https://${AssetApi.GraphQLUrl}"
+          APPSYNC_API_KEY: "NO_KEY" # Si usas Cognito, no necesitas API Key
 
   ## --- EventBridge Scheduler ---
   LambdaIngestaSchedule:
