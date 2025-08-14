@@ -129,7 +129,7 @@ Resources:
           DYNAMODB_TABLE: !Ref AssetStatusTable
           TIMESTREAM_DB: !Ref AssetTimestreamDB
           TIMESTREAM_TABLE: AssetMetricsTable
-          APPSYNC_API_URL: !Sub "https://${AssetApi.ApiId}.appsync-api.${AWS::Region}.amazonaws.com/graphql"
+          APPSYNC_API_URL: !GetAtt AssetApi.GraphQLUrl
           APPSYNC_API_KEY: "NO_KEY"
 
   ## --- EventBridge Scheduler ---

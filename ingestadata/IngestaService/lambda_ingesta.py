@@ -8,7 +8,7 @@ dynamodb = boto3.resource('dynamodb')
 timestream = boto3.client('timestream-write')
 table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 
-APPSYNC_URL = 'https://ebvdnffnqbe3bfylubwf4mcfy4.appsync-api.us-east-1.amazonaws.com/graphql'
+APPSYNC_URL = os.environ['APPSYNC_API_URL']
 
 def lambda_handler(event, context):
     print(f"URL appsync: {APPSYNC_URL}")
