@@ -9,7 +9,6 @@ Globals:
     MemorySize: 128
 
 Resources:
-  ## --- DynamoDB ---
   AssetStatusTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -36,8 +35,8 @@ Resources:
       DatabaseName: !Ref AssetTimestreamDB
       TableName: AssetMetricsTable
       RetentionProperties:
-        MemoryStoreRetentionPeriodInHours: 24
-        MagneticStoreRetentionPeriodInDays: 365
+        MemoryStoreRetentionPeriodInHours: 12
+        MagneticStoreRetentionPeriodInDays: 90
 
   ## --- AppSync ---
   AssetApi:
@@ -127,7 +126,7 @@ Resources:
     DependsOn: 
       - LambdaIngesta
     Properties:
-      ScheduleExpression: rate(5 minutes) # <-- Cambia intervalo
+      ScheduleExpression: rate(10 minutes) # <-- Cambia intervalo
       Targets:
         - Arn: !GetAtt LambdaIngesta.Arn
           Id: LambdaIngestaTarget
