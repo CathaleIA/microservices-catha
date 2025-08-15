@@ -86,6 +86,7 @@ Resources:
     Type: AWS::IAM::Role
     DependsOn:
       - AssetStatusTable
+      - LambdaQueryHandler
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -104,6 +105,10 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                 Resource: !GetAtt AssetStatusTable.Arn
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt LambdaQueryHandler.Arn
 
   ## --- Lambda Ingesta ---
   LambdaIngesta:
