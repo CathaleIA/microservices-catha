@@ -160,6 +160,7 @@ Resources:
             - Effect: Allow
               Action:
                 - timestream:Query
+                - timestream:Select
                 - timestream:DescribeEndpoints
               Resource: "*"
       Environment:
