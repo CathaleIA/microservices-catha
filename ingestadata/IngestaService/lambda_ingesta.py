@@ -3,6 +3,7 @@ import boto3
 import requests
 from datetime import datetime, timezone
 import json
+from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 timestream = boto3.client('timestream-write')
@@ -27,9 +28,9 @@ def lambda_handler(event, context):
             "assetId": "GEN-00",
             "status": motor["modoOperacion"],
             "timestamp": timestamp,
-            "presionAceite": motor["presionAceite"],
-            "presionCombustible": bancos["A1"]["presionCombustible"],
-            "presionTurbo": bancos["A1"]["presionTurbo"],
+            "presionAceite": Decimal(str(motor["presionAceite"])),
+            "presionCombustible": Decimal(str(bancos["A1"]["presionCombustible"])),
+            "presionTurbo": Decimal(str(bancos["A1"]["presionTurbo"])),
         })
 
         records = []
