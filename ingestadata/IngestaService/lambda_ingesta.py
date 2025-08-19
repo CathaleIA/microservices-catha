@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         for key, value in motor.items():
             if isinstance(value, (int,float)):
                 records.append({
-                    'Dimensions': [{'name': 'assetId', 'Value': 'GEN-00'}],
+                    'Dimensions': [{'Name': 'assetId', 'Value': 'GEN-00'}],
                     'MeasureName': key,
                     'MeasureValue': str(value),
                     'MeasureValueType': 'DOUBLE',
