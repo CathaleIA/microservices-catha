@@ -11,67 +11,96 @@ table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 APPSYNC_URL = os.environ['APPSYNC_API_URL']
 
 def lambda_handler(event, context):
-    print(f"URL appsync: {APPSYNC_URL}")
-    # print(f"DB: {os.environ['TIMESTREAM_DB']}") 
-    # print(f"Tabla: {os.environ['TIMESTREAM_TABLE']}")
-    # print(f"Endpoint Timestream: {timestream.meta.endpoint_url}")
-    # 1. Simulación: Obtener datos de una API externa
-    # En producción aquí haces requests.get() a tu API o DB
-    assets_data = [
-        {"assetId": "GEN-01", "status": "RUNNING", "potencia": 250, "temp": 75},
-        {"assetId": "GEN-02", "status": "STOPPED", "potencia": 0, "temp": 30}
-    ]
 
-    for asset in assets_data:
-        timestamp = datetime.now(timezone.utc).isoformat()
+    try:
+        response = requests.get(APPSYNC_URL, timeout=40)
+        response.raise_for_status()
+        data = response.json()
 
-        # 2. Guardar último estado en DynamoDB
+        print("Data de la api:", json.dumps(data))
+
+        timestamp = data["timestamp"]
+        motor = data["motor"]
+        bancos = data["bancos"]
+
         table.put_item(Item={
-            "assetId": asset['assetId'],
-            "status": asset['status'],
-            "timestamp": timestamp
+            "assetId": "GEN-00",
+            "status": motor["modoOperacion"],
+            "timestamp": timestamp,
+            "presionAceite": motor["presionAceite"],
+            "presionCombustible": bancos["A1"]["presionCombustible"],
+            "presionTurbo": bancos["A1"]["presionTurbo"],
         })
 
-        # 3. Guardar histórico en Timestream
-        timestream.write_records(
-            DatabaseName=os.environ['TIMESTREAM_DB'],
-            TableName=os.environ['TIMESTREAM_TABLE'],
-            Records=[
-                {
-                    'Dimensions': [
-                        {'Name': 'assetId', 'Value': asset['assetId']},
-                    ],
-                    'MeasureName': 'potencia',
-                    'MeasureValue': str(asset['potencia']),
+        records = []
+
+        for key, value in motor.items():
+            if isinstance(value, (int,float)):
+                records.append({
+                    'Dimensions': [{'name': 'assetId', 'Value': 'GEN-00'}],
+                    'MeasureName': key,
+                    'MeasureValue': str(value),
                     'MeasureValueType': 'DOUBLE',
-                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
-                },
-                {
-                    'Dimensions': [
-                        {'Name': 'assetId', 'Value': asset['assetId']},
-                    ],
-                    'MeasureName': 'temperatura',
-                    'MeasureValue': str(asset['temp']),
-                    'MeasureValueType': 'DOUBLE',
-                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
-                }
-            ]
-        )
+                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 10000))
+                })
+
+        for banco, metrics in bancos.items():
+            for key, value in metrics.items():
+                if isinstance(value, (int, float)):
+                    records.append({
+                        'Dimensions': [
+                            {'Name': 'assetId', 'Value': 'GEN-00'},
+                            {'Name': 'banco', 'Value': banco}
+                        ],
+                        'MeasureName': key,
+                        'MeasureValue': str(value),
+                        'MeasureValueType': 'DOUBLE',
+                        'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
+                    })
+
+        if records:
+            timestream.write_records(
+                DatabaseName=os.environ['TIMESTREAM_DB'],
+                TableName=os.environ['TIMESTREAM_TABLE'],
+                Records=records
+            )
+            print(f"✅ {len(records)} métricas insertadas en Timestream")
+
 
         # 4. Llamar a AppSync Mutation para disparar suscripción
         mutation = """
-        mutation Publish($assetId: String!, $status: String!, $timestamp: String!) {
-          publishUpdate(assetId: $assetId, status: $status, timestamp: $timestamp) {
-            assetId
-            status
-            timestamp
-          }
+        mutation Publish(            
+            $assetId: String!, 
+            $status: String!, 
+            $timestamp: String!,
+            $presionAceite: Float!
+            $presionCombustible: Float!
+            $presionTurbo; Float!
+        ) {
+            publishUpdate(
+                assetId: $assetId,
+                status: $status,
+                timestamp: $timestamp,
+                presionAceite: $presionAceite,
+                presionCombustible: $presionCombustible,
+                presionTurbo: $presionTurbo
+            ) {
+                assetId
+                status
+                timestamp
+                presionAceite
+                presionCombustible
+                presionTurbo
+            }
         }
         """
         variables = {
-            "assetId": asset['assetId'],
-            "status": asset['status'],
-            "timestamp": timestamp
+            "assetId": "GEN-00",
+            "status": motor["modoOperacion"],
+            "timestamp": timestamp,
+            "presionAceite": motor["presionAceite"],
+            "presionCombustible": bancos["A1"]["presionCombustible"],
+            "presionTurbo": bancos["A1"]["presionTurbo"],
         }
 
         # Autenticación via IAM si usas Cognito desde Lambda
@@ -81,7 +110,16 @@ def lambda_handler(event, context):
 
         requests.post(APPSYNC_URL, json={"query": mutation, "variables": variables}, headers=headers)
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"message": "Data ingested and published"})
-    }
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Data ingested and published"})
+        }
+
+
+    except Exception as e:
+        print("Error en lambda ingesta", str(e))
+        return {
+            "statusCode": 500,
+            "boby": json.dumps({"error:", str(e)})
+        }

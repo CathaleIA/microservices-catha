@@ -60,6 +60,9 @@ Resources:
           assetId: String!
           status: String!
           timestamp: String!
+          presionAceite: Float!
+          presionCombustible: Float!
+          presionTurbo; Float!
         }
 
         type Metric {
@@ -69,7 +72,14 @@ Resources:
         }
 
         type Mutation {
-          publishUpdate(assetId: String!, status: String!, timestamp: String!): AssetUpdate
+          publishUpdate(
+            assetId: String!, 
+            status: String!, 
+            timestamp: String!,
+            presionAceite: Float!
+            presionCombustible: Float!
+            presionTurbo; Float!
+            ): AssetUpdate
         }
 
         type Subscription {
@@ -143,6 +153,7 @@ Resources:
           TIMESTREAM_TABLE: AssetMetricsTable
           APPSYNC_API_URL: !GetAtt AssetApi.GraphQLUrl
           APPSYNC_API_KEY: "NO_KEY"
+          APPSYNC_API_URL: "https://apibackend-esjz.onrender.com/api/motor"
 
   ## --- Lambda Lectura --
   LambdaQueryHandler:

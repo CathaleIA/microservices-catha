@@ -55,3 +55,11 @@
     NEXT_PUBLIC_APPSYNC_WS_URL=wss://ebvdnffnqbe3bfylubwf4mcfy4.appsync-realtime-api.us-east-1.amazonaws.com/graphql
     ```
 
+## Halar data de APIFAKE
+
+
+
+## Conexion de snowflake con AWS
+
+1. Link: https://docs.snowflake.com/en/user-guide/python-connector-install.html
+
