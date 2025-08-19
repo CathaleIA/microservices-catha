@@ -42,7 +42,7 @@ def lambda_handler(event, context):
                     'MeasureName': key,
                     'MeasureValue': str(value),
                     'MeasureValueType': 'DOUBLE',
-                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 10000))
+                    'Time': str(int(datetime.now(timezone.utc).timestamp() * 1000))
                 })
 
         for banco, metrics in bancos.items():
