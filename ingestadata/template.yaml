@@ -62,7 +62,7 @@ Resources:
           timestamp: String!
           presionAceite: Float!
           presionCombustible: Float!
-          presionTurbo; Float!
+          presionTurbo: Float!
         }
 
         type Metric {
