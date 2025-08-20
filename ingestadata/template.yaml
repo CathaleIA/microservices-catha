@@ -192,14 +192,23 @@ Resources:
         LambdaFunctionArn: !GetAtt LambdaQueryHandler.Arn
       ServiceRoleArn: !GetAtt AssetApiRole.Arn
 
+  ## -- Data source none --
+  NoneDataSource:
+  Type: AWS::AppSync::DataSource
+  Properties:
+    ApiId: !GetAtt AssetApi.ApiId
+    Name: NoneDataSource
+    Type: NONE
+
   ## -- Tesolver Subscription --
   PublishUpdateResolver:
     Type: AWS::AppSync::Resolver
+    DependsOn: NoneDataSource
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Mutation
       FieldName: publishUpdate
-      DataSourceName: NONE
+      DataSourceName: NoneDataSource
       RequestMappingTemplate: |
         {
           "version": "2018-05-29",
