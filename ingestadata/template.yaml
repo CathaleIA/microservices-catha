@@ -57,13 +57,16 @@ Resources:
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       Definition: |
-        type AssetUpdate {
-          assetId: String!
+        type AssetUpdate
+          @aws_cognito_user_pools
+          @aws_iam
+        {
+          assetId: ID!
           status: String!
-          timestamp: String!
-          presionAceite: Float!
-          presionCombustible: Float!
-          presionTurbo: Float!
+          timestamp: AWSDateTime!
+          presionAceite: Float
+          presionCombustible: Float
+          presionTurbo: Float
         }
 
         type Metric {
