@@ -194,11 +194,11 @@ Resources:
 
   ## -- Data source none --
   NoneDataSource:
-  Type: AWS::AppSync::DataSource
-  Properties:
-    ApiId: !GetAtt AssetApi.ApiId
-    Name: NoneDataSource
-    Type: NONE
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      Name: NoneDataSource
+      Type: NONE
 
   ## -- Tesolver Subscription --
   PublishUpdateResolver:
