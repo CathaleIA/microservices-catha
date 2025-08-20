@@ -110,7 +110,8 @@ def lambda_handler(event, context):
             "Content-Type": "application/json"
         }
 
-        requests.post(APPSYNC_URL, json={"query": mutation, "variables": variables}, headers=headers)
+        r = requests.post(APPSYNC_URL, json={"query": mutation, "variables": variables}, headers=headers)
+        print("Respuesta appsync mutacion", r.status_code, r.text)
 
 
         return {
