@@ -35,15 +35,7 @@ def sign_and_post(query, variables):
 
 def lambda_handler(event, context):
     try:
-        # 1. Llamar fuente externa
-        response = boto3.client("lambda")._endpoint.http_session.send(
-            boto3.session.Session().create_client("lambda")._endpoint.create_request(
-                operation_model=None,
-                request_dict={"url_path": DATA_API, "method": "GET"},
-                request_context={},
-            )
-        )
-        # 👆 opcional: puedes seguir usando requests si quieres, lo dejo igual que tu versión:
+        
         response = requests.get(DATA_API, timeout=40)
         response.raise_for_status()
         data = response.json()
