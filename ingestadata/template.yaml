@@ -81,7 +81,7 @@ Resources:
             presionAceite: Float!
             presionCombustible: Float!
             presionTurbo: Float!
-            ): AssetUpdate
+            ): AssetUpdate @aws_iam
         }
 
         type Subscription {
@@ -147,7 +147,7 @@ Resources:
             - Effect: Allow
               Action:
                 - appsync:GraphQL
-              Resource: !GetAtt AssetApi.Arn
+              Resource: "*"
       Environment:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
