@@ -44,12 +44,12 @@ Resources:
     Properties:
       Name: AssetDashboardAPI
       AuthenticationType: AMAZON_COGNITO_USER_POOLS
-      AdditionalAuthenticationProviders:
-        - AuthenticationType: AWS_IAM
       UserPoolConfig:
         AwsRegion: !Ref AWS::Region
         UserPoolId: "us-east-1_hWdkRwqlP"  # <-- Reemplaza con el tuyo
         DefaultAction: ALLOW
+      AdditionalAuthenticationProviders:
+        - AuthenticationType: AWS_IAM
 
   AssetSchema:
     Type: AWS::AppSync::GraphQLSchema
