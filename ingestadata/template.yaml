@@ -214,7 +214,7 @@ Resources:
       DataSourceName: NoneDataSource
       RequestMappingTemplate: |
         {
-          "version": "2018-05-29",
+          "version": "2018-05-29"
         }
       ResponseMappingTemplate: "$util.toJson($context.arguments)"
 

@@ -23,6 +23,10 @@
     ```
     [ec2-user@ip-172-31-84-48 microservices-catha]$ docker run -it --rm --privileged -v ~/.aws:/home/ec2-user/.aws:ro -v $(pwd):/home/ec2-user/app -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker -v /etc/docker:/etc/docker --group-add $(stat -c '%g' /var/run/docker.sock) -u root deploy-merge
     ```
+1. Libreria para firmar solicitudes a appsync con IAM, se instalo desde EC2 en la raiz del proyecto, cuando se hace sam build el lee los archivos.
+    ```
+    pip install requests requests-aws4auth -t IngestaService/
+    ```
 
 1. Estrcutura de carpetas:
     ```
