@@ -156,7 +156,6 @@ Resources:
           APPSYNC_API_URL: !GetAtt AssetApi.GraphQLUrl
           APPSYNC_API_KEY: "NO_KEY"
           FAKE_API_URL: "https://apibackend-esjz.onrender.com/api/motor"
-          AWS_REGION: "us-east-1"
 
   ## --- Lambda Lectura --
   LambdaQueryHandler:
