@@ -44,6 +44,8 @@ Resources:
     Properties:
       Name: AssetDashboardAPI
       AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      AdditionalAuthenticationProviders:
+        - AuthenticationType: AWS_IAM
       UserPoolConfig:
         AwsRegion: !Ref AWS::Region
         UserPoolId: "us-east-1_hWdkRwqlP"  # <-- Reemplaza con el tuyo
@@ -145,7 +147,7 @@ Resources:
             - Effect: Allow
               Action:
                 - appsync:GraphQL
-              Resource: "*"
+              Resource: !GetAtt AssetApi.Arn
       Environment:
         Variables:
           DYNAMODB_TABLE: !Ref AssetStatusTable
@@ -154,6 +156,7 @@ Resources:
           APPSYNC_API_URL: !GetAtt AssetApi.GraphQLUrl
           APPSYNC_API_KEY: "NO_KEY"
           FAKE_API_URL: "https://apibackend-esjz.onrender.com/api/motor"
+          AWS_REGION: "us-east-1"
 
   ## --- Lambda Lectura --
   LambdaQueryHandler:
