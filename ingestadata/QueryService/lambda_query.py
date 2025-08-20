@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 
             response = table.get_item(Key={'assetId': asset_id})
             item = response.get('Item')
-            print("📄 Respuesta DynamoDB:", json.dumps(item))
+            # print("📄 Respuesta DynamoDB:", json.dumps(item))
 
             if item and all(k in item for k in ['assetId', 'status', 'timestamp']):
                 return item

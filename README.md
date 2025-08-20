@@ -47,6 +47,7 @@
 1. Instalar dependencias 
     ```
     npm install graphql graphql-ws @apollo/client
+    npm install subscriptions-transport-ws
     ```
 
 1. Agregar varibales de entorno `.env`
