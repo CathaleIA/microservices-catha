@@ -9,12 +9,13 @@ dynamodb = boto3.resource('dynamodb')
 timestream = boto3.client('timestream-write')
 table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 
+DATA_API = os.environ['FAKE_API_URL']
 APPSYNC_URL = os.environ['APPSYNC_API_URL']
 
 def lambda_handler(event, context):
 
     try:
-        response = requests.get(APPSYNC_URL, timeout=40)
+        response = requests.get(DATA_API, timeout=40)
         response.raise_for_status()
         data = response.json()
 
@@ -76,7 +77,7 @@ def lambda_handler(event, context):
             $timestamp: String!,
             $presionAceite: Float!
             $presionCombustible: Float!
-            $presionTurbo; Float!
+            $presionTurbo: Float!
         ) {
             publishUpdate(
                 assetId: $assetId,
