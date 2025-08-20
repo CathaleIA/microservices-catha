@@ -1,8 +1,6 @@
 import os
 import boto3
-from botocore.auth import SigV4Auth
-from botocore.awsrequest import AWSRequest
-from botocore.endpoint import BotocoreHTTPSession
+from aws4auth import AWS4Auth
 from datetime import datetime, timezone
 import json
 from decimal import Decimal
@@ -17,17 +15,23 @@ APPSYNC_URL = os.environ['APPSYNC_API_URL']
 REGION = os.environ['AWS_REGION']
 
 def sign_and_post(query, variables):
-    """Firma con SigV4 y envía mutación a AppSync"""
-    session = boto3.session.Session()
+    session = boto3.Session()
     credentials = session.get_credentials()
-    request = AWSRequest(
-        method="POST",
-        url=APPSYNC_URL,
-        data=json.dumps({"query": query, "variables": variables}),
-        headers={"Content-Type": "application/json"},
+    auth = AWS4Auth(
+        credentials.access_key,
+        credentials.secret_key,
+        REGION,
+        'appsync',
+        session_token=credentials.token
     )
-    SigV4Auth(credentials, "appsync", REGION).add_auth(request)
-    return BotocoreHTTPSession().send(request.prepare())
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(
+        APPSYNC_URL,
+        auth=auth,
+        json={'query': query, 'variables': variables},
+        headers=headers
+    )
+    return response
 
 def lambda_handler(event, context):
     try:
