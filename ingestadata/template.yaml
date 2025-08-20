@@ -38,7 +38,6 @@ Resources:
         MemoryStoreRetentionPeriodInHours: 12
         MagneticStoreRetentionPeriodInDays: 90
 
-  ## --- AppSync ---
   AssetApi:
     Type: AWS::AppSync::GraphQLApi
     Properties:
@@ -46,7 +45,7 @@ Resources:
       AuthenticationType: AMAZON_COGNITO_USER_POOLS
       UserPoolConfig:
         AwsRegion: !Ref AWS::Region
-        UserPoolId: "us-east-1_hWdkRwqlP"  # <-- Reemplaza con el tuyo
+        UserPoolId: "us-east-1_hWdkRwqlP"
         DefaultAction: ALLOW
       AdditionalAuthenticationProviders:
         - AuthenticationType: AWS_IAM
@@ -192,6 +191,21 @@ Resources:
       LambdaConfig:
         LambdaFunctionArn: !GetAtt LambdaQueryHandler.Arn
       ServiceRoleArn: !GetAtt AssetApiRole.Arn
+
+  ## -- Tesolver Subscription --
+  PublishUpdateResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt AssetApi.ApiId
+      TypeName: Mutation
+      FieldName: publishUpdate
+      DataSourceName: NONE
+      RequestMappingTemplate: |
+        {
+          "version": "2018-05-29",
+          "payload": $util.toJson($context.arguments)
+        }
+      ResponseMappingTemplate: "$util.toJson($context.arguments)"
 
   ## -- Resolver para Dynamo -- 
   AssetQueryResolver:
