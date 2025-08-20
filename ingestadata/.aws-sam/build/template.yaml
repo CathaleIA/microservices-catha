@@ -38,6 +38,8 @@ Resources:
     Properties:
       Name: AssetDashboardAPI
       AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      AdditionalAuthenticationProviders:
+      - AuthenticationType: AWS_IAM
       UserPoolConfig:
         AwsRegion:
           Ref: AWS::Region
@@ -53,14 +55,20 @@ Resources:
         - AssetApi
         - ApiId
       Definition: "type AssetUpdate {\n  assetId: String!\n  status: String!\n  timestamp:\
-        \ String!\n}\n\ntype Mutation {\n  publishUpdate(assetId: String!, status:\
-        \ String!, timestamp: String!): AssetUpdate\n}\n\ntype Subscription {\n  onUpdate:\
-        \ AssetUpdate\n    @aws_subscribe(mutations: [\"publishUpdate\"])\n}\n\ntype\
-        \ Query {\n  getStatus(assetId: String!): AssetUpdate\n}\n"
+        \ String!\n  presionAceite: Float!\n  presionCombustible: Float!\n  presionTurbo:\
+        \ Float!\n}\n\ntype Metric {\n  timestamp: String!\n  metric: String!\n  value:\
+        \ Float!\n}\n\ntype Mutation {\n  publishUpdate(\n    assetId: String!, \n\
+        \    status: String!, \n    timestamp: String!,\n    presionAceite: Float!\n\
+        \    presionCombustible: Float!\n    presionTurbo: Float!\n    ): AssetUpdate\n\
+        }\n\ntype Subscription {\n  onUpdate: AssetUpdate\n    @aws_subscribe(mutations:\
+        \ [\"publishUpdate\"])\n}\n\ntype Query {\n  getStatus(assetId: String!):\
+        \ AssetUpdate\n  getMetrics(assetId: String!, start: String!, end: String!)\
+        \ : [Metric]\n}\n"
   AssetApiRole:
     Type: AWS::IAM::Role
     DependsOn:
     - AssetStatusTable
+    - LambdaQueryHandler
     Properties:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -82,6 +90,13 @@ Resources:
               Fn::GetAtt:
               - AssetStatusTable
               - Arn
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource:
+              Fn::GetAtt:
+              - LambdaQueryHandler
+              - Arn
   LambdaIngesta:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -92,25 +107,127 @@ Resources:
       CodeUri: LambdaIngesta
       Handler: lambda_ingesta.lambda_handler
       Policies:
-      - AmazonDynamoDBFullAccess
-      - AmazonTimestreamFullAccess
-      - AWSAppSyncInvokeFullAccess
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          Resource:
+            Fn::GetAtt:
+            - AssetStatusTable
+            - Arn
+        - Effect: Allow
+          Action:
+          - timestream:WriteRecords
+          - timestream:DescribeEndpoints
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - appsync:GraphQL
+          Resource:
+            Fn::GetAtt:
+            - AssetApi
+            - Arn
       Environment:
         Variables:
           DYNAMODB_TABLE:
             Ref: AssetStatusTable
           TIMESTREAM_DB:
             Ref: AssetTimestreamDB
-          TIMESTREAM_TABLE:
-            Ref: AssetTimestreamTable
+          TIMESTREAM_TABLE: AssetMetricsTable
           APPSYNC_API_URL:
-            Fn::Sub: https://${AssetApi.GraphQLUrl}
+            Fn::GetAtt:
+            - AssetApi
+            - GraphQLUrl
           APPSYNC_API_KEY: NO_KEY
+          FAKE_API_URL: https://apibackend-esjz.onrender.com/api/motor
     Metadata:
       SamResourceId: LambdaIngesta
+  LambdaQueryHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LambdaQueryHandler
+      Handler: lambda_query.lambda_handler
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          Resource:
+            Fn::GetAtt:
+            - AssetStatusTable
+            - Arn
+        - Effect: Allow
+          Action:
+          - timestream:Query
+          - timestream:Select
+          - timestream:DescribeEndpoints
+          Resource: '*'
+      Environment:
+        Variables:
+          DYNAMODB_TABLE:
+            Ref: AssetStatusTable
+          TIMESTREAM_DB:
+            Ref: AssetTimestreamDB
+          TIMESTREAM_TABLE: AssetMetricsTable
+    Metadata:
+      SamResourceId: LambdaQueryHandler
+  LambdaQueryDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AssetApi
+        - ApiId
+      Name: LambdaQueryDataSource
+      Type: AWS_LAMBDA
+      LambdaConfig:
+        LambdaFunctionArn:
+          Fn::GetAtt:
+          - LambdaQueryHandler
+          - Arn
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - AssetApiRole
+        - Arn
+  AssetQueryResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: LambdaQueryDataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AssetApi
+        - ApiId
+      TypeName: Query
+      FieldName: getStatus
+      DataSourceName: LambdaQueryDataSource
+      RequestMappingTemplate: "{\n  \"version\": \"2018-05-29\",\n  \"operation\"\
+        : \"Invoke\",\n  \"payload\": {\n    \"info\": {\n      \"fieldName\": \"\
+        getStatus\"\n    },\n    \"arguments\": $util.toJson($context.arguments)\n\
+        \  }\n}\n"
+      ResponseMappingTemplate: $util.toJson($context.result)
+  AssetMetricsResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: LambdaQueryDataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AssetApi
+        - ApiId
+      TypeName: Query
+      FieldName: getMetrics
+      DataSourceName: LambdaQueryDataSource
+      RequestMappingTemplate: "{\n  \"version\": \"2018-05-29\",\n  \"operation\"\
+        : \"Invoke\",\n  \"payload\": {\n    \"info\": {\n      \"fieldName\": \"\
+        getMetrics\"\n    },\n    \"arguments\": $util.toJson($context.arguments)\n\
+        \  }\n}\n"
+      ResponseMappingTemplate: $util.toJson($context.result)
   LambdaIngestaSchedule:
     Type: AWS::Events::Rule
     DependsOn:
+    - AssetTimestreamTable
+    - AssetTimestreamDB
     - LambdaIngesta
     Properties:
       ScheduleExpression: rate(10 minutes)
