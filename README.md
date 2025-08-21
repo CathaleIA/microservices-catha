@@ -75,3 +75,169 @@
 1. Link: https://docs.snowflake.com/en/user-guide/python-connector-install.html
 
 1. Se guardaron las credenciales de acceso a AWS en Secrets Manager de AWS.
+
+
+
+Prop para querys inteligentes a snowflake.
+```
+habalme mas sobre la opcion donde plotly inicia en 7d por ejemplo, y cuando cambie realiza otra consulta, lo quiero asi porque un mes tendra menos puntos que un dia por ejemplo, como soy capaz de leer cuando acciono un boton de rangeselector? , esto hay sobre evento en la libreria de plotly: export interface PlotMouseEvent {
+    points: PlotDatum[];
+    event: MouseEvent;
+}
+
+export interface PlotHoverEvent extends PlotMouseEvent {
+    xvals: Datum[];
+    yvals: Datum[];
+}
+
+export interface PlotCoordinate {
+    x: number;
+    y: number;
+    pointNumber: number;
+}
+
+export interface SelectionRange {
+    x: number[];
+    y: number[];
+}
+
+export type PlotSelectedData = Partial<PlotDatum>;
+
+export interface PlotSelectionEvent {
+    points: PlotDatum[];
+    range?: SelectionRange | undefined;
+    lassoPoints?: SelectionRange | undefined;
+}
+
+export interface PlotRestyleEventUpdate {
+    [key: string]: any;
+}
+
+export type PlotRestyleEvent = [PlotRestyleEventUpdate, number[]];
+
+export interface PlotScene {
+    center: Point;
+    eye: Point;
+    up: Point;
+}
+
+export interface PlotRelayoutEvent extends Partial<Layout> {
+    "xaxis.range[0]"?: number;
+    "xaxis.range[1]"?: number;
+    "yaxis.range[0]"?: number;
+    "yaxis.range[1]"?: number;
+    "xaxis.autorange"?: boolean;
+    "yaxis.autorange"?: boolean;
+}
+
+export interface ClickAnnotationEvent {
+    index: number;
+    annotation: Annotations;
+    fullAnnotation: Annotations;
+    event: MouseEvent;
+}
+
+export interface FrameAnimationEvent {
+    name: string;
+    frame: Frame;
+    animation: {
+        frame: AnimationFrameOpts;
+        transition: Transition;
+    };
+}
+
+export interface LegendClickEvent {
+    event: MouseEvent;
+    node: PlotlyHTMLElement;
+    curveNumber: number;
+    expandedIndex: number;
+    data: Data[];
+    layout: Partial<Layout>;
+    frames: Frame[];
+    config: Partial<Config>;
+    fullData: Data[];
+    fullLayout: Partial<Layout>;
+}
+export interface SliderChangeEvent {
+    slider: Slider;
+    step: SliderStep;
+    interaction: boolean;
+    previousActive: number;
+}
+
+export interface SliderStartEvent {
+    slider: Slider;
+}
+
+export interface SliderEndEvent {
+    slider: Slider;
+    step: SliderStep;
+}
+
+export interface SunburstClickEvent {
+    event: MouseEvent;
+    nextLevel: string;
+    points: SunburstPlotDatum[];
+}
+
+export interface SunburstPlotDatum {
+    color: number;
+    curveNumber: number;
+    data: Data;
+    entry: string;
+    fullData: Data;
+    hovertext: string;
+    id: string;
+    label: string;
+    parent: string;
+    percentEntry: number;
+    percentParent: number;
+    percentRoot: number;
+    pointNumber: number;
+    root: string;
+    value: number;
+}
+
+export interface BeforePlotEvent {
+    data: Data[];
+    layout: Partial<Layout>;
+    config: Partial<Config>;
+}
+
+export interface PlotlyHTMLElement extends HTMLElement {
+    on(event: "plotly_click" | "plotly_unhover", callback: (event: PlotMouseEvent) => void): void;
+    on(event: "plotly_hover", callback: (event: PlotHoverEvent) => void): void;
+    on(event: "plotly_selecting" | "plotly_selected", callback: (event: PlotSelectionEvent) => void): void;
+    on(event: "plotly_restyle", callback: (data: PlotRestyleEvent) => void): void;
+    on(event: "plotly_relayout" | "plotly_relayouting", callback: (event: PlotRelayoutEvent) => void): void;
+    on(event: "plotly_clickannotation", callback: (event: ClickAnnotationEvent) => void): void;
+    on(event: "plotly_animatingframe", callback: (event: FrameAnimationEvent) => void): void;
+    on(event: "plotly_legendclick" | "plotly_legenddoubleclick", callback: (event: LegendClickEvent) => boolean): void;
+    on(event: "plotly_sliderchange", callback: (event: SliderChangeEvent) => void): void;
+    on(event: "plotly_sliderend", callback: (event: SliderEndEvent) => void): void;
+    on(event: "plotly_sliderstart", callback: (event: SliderStartEvent) => void): void;
+    on(event: "plotly_sunburstclick", callback: (event: SunburstClickEvent) => void): void;
+    on(event: "plotly_event", callback: (data: any) => void): void;
+    on(event: "plotly_beforeplot", callback: (event: BeforePlotEvent) => boolean): void;
+    on(
+        event:
+            | "plotly_afterexport"
+            | "plotly_afterplot"
+            | "plotly_animated"
+            | "plotly_animationinterrupted"
+            | "plotly_autosize"
+            | "plotly_beforeexport"
+            | "plotly_deselect"
+            | "plotly_doubleclick"
+            | "plotly_framework"
+            | "plotly_redraw"
+            | "plotly_transitioning"
+            | "plotly_transitioninterrupted",
+        callback: () => void,
+    ): void;
+    removeAllListeners: (handler: string) => void;
+    data: Data[];
+    layout: Layout;
+} 
+```
+
