@@ -50,8 +50,7 @@
 
 1. Instalar dependencias 
     ```
-    npm install graphql graphql-ws @apollo/client
-    npm install subscriptions-transport-ws
+    npm install @apollo/client aws-appsync-auth-link aws-appsync-subscription-link graphql
     ```
 
 1. Agregar varibales de entorno `.env`
@@ -59,6 +58,13 @@
     NEXT_PUBLIC_APPSYNC_API_URL=https://ebvdnffnqbe3bfylubwf4mcfy4.appsync-api.us-east-1.amazonaws.com/graphql
     NEXT_PUBLIC_APPSYNC_WS_URL=wss://ebvdnffnqbe3bfylubwf4mcfy4.appsync-realtime-api.us-east-1.amazonaws.com/graphql
     ```
+
+1. Documentacion oficial
+    1. [Building a real-time WebSocket client in AWS AppSync](https://docs.aws.amazon.com/appsync/latest/devguide/real-time-websocket-client.html)
+
+    1. [Opciones para conectar Nextj con Appsync, libreria final actualizada](https://docs.amplify.aws/gen1/nextjs/prev/build-a-backend/graphqlapi/upgrade-guide/)
+
+    
 
 ## Halar data de APIFAKE
 
@@ -68,3 +74,4 @@
 
 1. Link: https://docs.snowflake.com/en/user-guide/python-connector-install.html
 
+1. Se guardaron las credenciales de acceso a AWS en Secrets Manager de AWS.

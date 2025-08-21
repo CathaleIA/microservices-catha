@@ -75,6 +75,11 @@ Resources:
           value: Float!
         }
 
+        type TimeSeriesPoint {
+          timestamp: AWSDateTime!
+          value: Float!
+        }
+
         type Mutation {
           publishUpdate(
             assetId: String!, 
@@ -94,6 +99,7 @@ Resources:
         type Query {
           getStatus(assetId: String!): AssetUpdate
           getMetrics(assetId: String!, start: String!, end: String!) : [Metric]
+          getHistoricalData(start: AWSDateTime!, end: AWSDateTime!): [TimeSeriesPoint]
         }
 
   AssetApiRole:
@@ -123,6 +129,9 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource: !GetAtt LambdaQueryHandler.Arn
+              - Effect: Allow
+                Action:
+                  - lambda: !GetAtt SnowflakeQueryLambda.Arn
 
   ## --- Lambda Ingesta ---
   LambdaIngesta:
@@ -183,6 +192,29 @@ Resources:
           DYNAMODB_TABLE: !Ref AssetStatusTable
           TIMESTREAM_DB: !Ref AssetTimestreamDB
           TIMESTREAM_TABLE: AssetMetricsTable
+
+  ## --- Lambda snowflake ---
+  SnowflakeQueryLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: SnowflakeQueryLambda/
+      Handler: lambda_snow.lambda_handler
+      Policies:
+        - SecretsManagerReadWrite
+      Environment:
+        Variables:
+          SNOWFLAKE_SECRET: SnowflakeCredentials
+
+  ## -- Data sorce snowflake --
+  SnowflakeDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !Ref AssetApi.ApiId  # Asegúrate de que AssetApi esté definido
+      Name: SnowflakeDataSource
+      Type: AWS_LAMBDA
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt SnowflakeQueryLambda.Arn
+      ServiceRoleArn: !GetAtt AssetApiRole.Arn
 
   ## -- Data Source --
   LambdaQueryDataSource:
@@ -261,6 +293,30 @@ Resources:
           }
         }
       ResponseMappingTemplate: "$util.toJson($context.result)"
+
+  ## -- Resolver snowflake
+  GetHistoricalDataResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref AssetApi
+      TypeName: Query
+      FieldName: getHistoricalData
+      DataSourceName: !Ref SnowflakeDataSource
+      RequestMappingTemplate: |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "arguments": $util.toJson($context.arguments),
+            "info": $util.toJson($context.info)
+          }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.result.statusCode == 200)
+          $util.toJson($util.parseJson($ctx.result.body))
+        #else
+          $util.error($ctx.result.body, "LambdaError")
+        #end
 
 
   ## --- EventBridge Scheduler ---
