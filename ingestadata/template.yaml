@@ -209,7 +209,7 @@ Resources:
   SnowflakeDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
-      ApiId: !Ref AssetApi.ApiId  # Asegúrate de que AssetApi esté definido
+      ApiId: !GetAtt AssetApi.ApiId
       Name: SnowflakeDataSource
       Type: AWS_LAMBDA
       LambdaConfig:
