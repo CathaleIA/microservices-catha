@@ -302,7 +302,7 @@ Resources:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
       FieldName: getHistoricalData
-      DataSourceName: !Ref SnowflakeDataSource
+      DataSourceName: SnowflakeDataSource
       RequestMappingTemplate: |
         {
           "version": "2018-05-29",
