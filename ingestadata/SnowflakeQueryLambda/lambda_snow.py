@@ -56,11 +56,11 @@ def lambda_handler(event, context):
         # Consulta SQL
         query = f"""
         SELECT 
-            timestamp,
+            MEASURE_TS,
             PROCESSVARIABLES_GENERATOR_RX_600_CLOCK_PULSE AS value
         FROM CPW_AWS_DB.NB_COPOWER_LA_CIRA_INFANTAS.DIA_NE_XT4_MODEL_ASOF_24HR_VW
         WHERE PROCESSVARIABLES_GENERATOR_RX_600_CLOCK_PULSE IS NOT NULL
-        ORDER BY timestamp
+        ORDER BY MEASURE_TS
         LIMIT 1000
         """
 
