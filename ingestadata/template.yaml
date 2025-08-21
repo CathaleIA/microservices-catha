@@ -132,7 +132,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: !GetAtt LambdaSnowflakeQuery,Arn
+                Resource: !GetAtt LambdaSnowflakeQuery.Arn
 
   ## --- Lambda Ingesta ---
   LambdaIngesta:
