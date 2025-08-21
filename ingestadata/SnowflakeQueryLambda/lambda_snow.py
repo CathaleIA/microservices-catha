@@ -4,6 +4,7 @@ import logging
 import boto3
 import snowflake.connector
 from botocore.exceptions import ClientError
+from datetime import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -67,14 +68,20 @@ def lambda_handler(event, context):
         cursor.execute(query)
         rows = cursor.fetchall()
 
-        # Formatear resultado
-        result = [
-            {
-                "timestamp": str(row[0]),
+        result = []
+        for row in rows:
+            ts = row[0]
+            # Si viene como datetime, lo convertimos a ISO-8601 con Z al final
+            if isinstance(ts, datetime):
+                ts_str = ts.isoformat(timespec='milliseconds').replace("+00:00", "Z")
+            else:
+                # En caso de que venga como string de Snowflake
+                ts_str = str(ts).replace(" ", "T") + "Z"
+
+            result.append({
+                "timestamp": ts_str,
                 "value": float(row[1]) if row[1] is not None else None
-            }
-            for row in rows
-        ]
+            })
 
         cursor.close()
         conn.close()
