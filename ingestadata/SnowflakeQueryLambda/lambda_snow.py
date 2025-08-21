@@ -71,11 +71,12 @@ def lambda_handler(event, context):
         result = []
         for row in rows:
             ts = row[0]
-            # Si viene como datetime, lo convertimos a ISO-8601 con Z al final
+
             if isinstance(ts, datetime):
-                ts_str = ts.isoformat(timespec='milliseconds').replace("+00:00", "Z")
+                # Exportar con milisegundos y zona UTC
+                ts_str = ts.replace(tzinfo=None).isoformat(timespec='milliseconds') + "Z"
             else:
-                # En caso de que venga como string de Snowflake
+                # Si ya viene como string
                 ts_str = str(ts).replace(" ", "T") + "Z"
 
             result.append({
