@@ -55,12 +55,11 @@ def lambda_handler(event, context):
         query = f"""
         SELECT 
             timestamp,
-            PROCESSVARIABLES_MOTOR_RX_531_EXHAUST_GAS_TEMPERATURE_CYLINDER_16 AS value
-        FROM motor_metrics 
-        WHERE timestamp >= CURRENT_DATE() 
-          AND timestamp < CURRENT_DATE() + INTERVAL '1 day'
-          AND PROCESSVARIABLES_MOTOR_RX_531_EXHAUST_GAS_TEMPERATURE_CYLINDER_16 IS NOT NULL
+            PROCESSVARIABLES_GENERATOR_RX_600_CLOCK_PULSE AS value
+        FROM CPW_AWS_DB.NB_COPOWER_LA_CIRA_INFANTAS.DIA_NE_XT4_MODEL_ASOF_24HR_VW
+        WHERE PROCESSVARIABLES_GENERATOR_RX_600_CLOCK_PULSE IS NOT NULL
         ORDER BY timestamp
+        LIMIT 1000
         """
 
         cursor.execute(query)
