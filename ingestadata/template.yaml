@@ -298,6 +298,7 @@ Resources:
   ## -- Resolver snowflake
   GetHistoricalDataResolver:
     Type: AWS::AppSync::Resolver
+    DependsOn: SnowflakeDataSource
     Properties:
       ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
