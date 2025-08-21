@@ -132,7 +132,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: !GetAtt LambdaSnowflakeQuery
+                Resource: !GetAtt LambdaSnowflakeQuery,Arn
 
   ## --- Lambda Ingesta ---
   LambdaIngesta:
@@ -299,7 +299,7 @@ Resources:
   GetHistoricalDataResolver:
     Type: AWS::AppSync::Resolver
     Properties:
-      ApiId: !Ref AssetApi
+      ApiId: !GetAtt AssetApi.ApiId
       TypeName: Query
       FieldName: getHistoricalData
       DataSourceName: !Ref SnowflakeDataSource
