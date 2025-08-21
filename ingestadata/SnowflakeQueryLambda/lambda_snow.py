@@ -46,6 +46,8 @@ def lambda_handler(event, context):
 
         cursor = conn.cursor()
 
+        cursor.execute(f"USE WAREHOUSE {creds['warehouse']}")   
+
         # Extraer variables del evento (AppSync las pasa en event['arguments'])
         # asset_id = event.get('arguments', {}).get('assetId', 'A1')
         start = event.get('arguments', {}).get('start', '2025-08-01')
