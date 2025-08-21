@@ -131,7 +131,8 @@ Resources:
                 Resource: !GetAtt LambdaQueryHandler.Arn
               - Effect: Allow
                 Action:
-                  - lambda: !GetAtt SnowflakeQueryLambda.Arn
+                  - lambda:InvokeFunction
+                Resource: !GetAtt LambdaSnowflakeQuery
 
   ## --- Lambda Ingesta ---
   LambdaIngesta:
@@ -194,7 +195,7 @@ Resources:
           TIMESTREAM_TABLE: AssetMetricsTable
 
   ## --- Lambda snowflake ---
-  SnowflakeQueryLambda:
+  LambdaSnowflakeQuery:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: SnowflakeQueryLambda/
@@ -213,7 +214,7 @@ Resources:
       Name: SnowflakeDataSource
       Type: AWS_LAMBDA
       LambdaConfig:
-        LambdaFunctionArn: !GetAtt SnowflakeQueryLambda.Arn
+        LambdaFunctionArn: !GetAtt LambdaSnowflakeQuery.Arn
       ServiceRoleArn: !GetAtt AssetApiRole.Arn
 
   ## -- Data Source --
